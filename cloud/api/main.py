@@ -9,17 +9,18 @@ once real hardware is live, and it's exactly what edge_simulator posts
 to today.
 """
 from datetime import datetime, timezone
-from typing import List
+from typing import List, Optional
 
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from sqlalchemy import desc
 
-from . import models, schemas, decision_engine, weather_client
+from . import models, schemas, decision_engine, weather_client, operations
 from .database import Base, engine, get_db
 
 Base.metadata.create_all(bind=engine)
+operations.seed_teams()
 
 app = FastAPI(title="DrainGuard Cloud API", version="0.1.0")
 
@@ -29,6 +30,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(operations.router)   # crews, dispatch, fleet view, demo controls
 
 
 @app.get("/api/v1/health")
@@ -111,10 +114,12 @@ def node_history(node_id: str, limit: int = 100, db: Session = Depends(get_db)):
 
 
 @app.get("/api/v1/alerts", response_model=List[schemas.AlertOut])
-def list_alerts(unacknowledged_only: bool = False, db: Session = Depends(get_db)):
+def list_alerts(unacknowledged_only: bool = False, limit: Optional[int] = None, db: Session = Depends(get_db)):
     q = db.query(models.Alert).order_by(desc(models.Alert.created_at))
     if unacknowledged_only:
         q = q.filter(models.Alert.acknowledged == False)  # noqa: E712
+    if limit:
+        q = q.limit(limit)
     return q.all()
 
 

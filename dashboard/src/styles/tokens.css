@@ -1,0 +1,138 @@
+/*
+  DrainGuard design tokens.
+
+  Survey-grey paper, petrol ink, water blue for water data. Status colours
+  (critical / serious / warning / good) are reserved for things that need
+  attention and always travel with an icon and a label.
+*/
+:root {
+  color-scheme: light;
+
+  --page: #eef2f1;
+  --panel: #ffffff;
+  --panel-2: #f5f8f7;
+  --panel-3: #e7eeed;
+  --ink: #0e2329;
+  --ink-2: #455a61;
+  --ink-3: #576d74;
+  --line: #dbe3e2;
+  --line-2: #c5d1d0;
+
+  --header: #0b2e35;
+  --header-2: #12414b;
+  --header-line: #1d4f59;
+  --header-ink: #e9f2f2;
+  --header-ink-2: #9fbcc1;
+  --header-accent: #7fd0d9;
+
+  --accent: #0b6c7a;
+  --accent-strong: #08545f;
+  --accent-wash: #e2f0f1;
+  --accent-ink: #ffffff;
+
+  --water: #2a78d6;
+  --water-wash: rgba(42, 120, 214, 0.12);
+  --neutral-mark: #b4c2c3;
+
+  --critical: #d03b3b;
+  --serious: #ec835a;
+  --warning: #fab219;
+  --good: #0ca30c;
+  --critical-ink: #a82a2a;
+  --serious-ink: #9c4a22;
+  --warning-ink: #7a5500;
+  --good-ink: #006300;
+  --critical-wash: #fbebea;
+  --serious-wash: #fdf1eb;
+  --warning-wash: #fef6e1;
+  --good-wash: #e8f5e8;
+
+  --node-ok: #58737a;
+  --map-ground: #e3e4e2; /* close to the basemap's land tone, so loading tiles don't flash */
+  --scrim: rgba(8, 24, 28, 0.42);
+  --shadow-1: 0 1px 2px rgba(14, 35, 41, 0.06);
+  --shadow-2: 0 2px 6px rgba(14, 35, 41, 0.06), 0 12px 32px rgba(14, 35, 41, 0.1);
+
+  --radius: 8px;
+  --radius-sm: 5px;
+
+  --font-sans: 'Archivo Variable', 'Archivo', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace;
+
+  --header-h: 54px;
+  --rail-w: 412px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --page: #081215;
+    --panel: #0e1c20;
+    --panel-2: #0b171a;
+    --panel-3: #16292e;
+    --ink: #e3eced;
+    --ink-2: #a2b4b7;
+    --ink-3: #7d9296;
+    --line: #1c2f35;
+    --line-2: #294148;
+    --header: #050d0f;
+    --header-2: #0d2126;
+    --header-line: #16303a;
+    --accent: #4bb3c0;
+    --accent-strong: #6fc6d1;
+    --accent-wash: #0f2f35;
+    --accent-ink: #04161a;
+    --water: #3987e5;
+    --water-wash: rgba(57, 135, 229, 0.18);
+    --neutral-mark: #3a5157;
+    --critical-ink: #f07a7a;
+    --serious-ink: #f2a07f;
+    --warning-ink: #f6c453;
+    --good-ink: #3fc23f;
+    --critical-wash: #2c1616;
+    --serious-wash: #2b1c14;
+    --warning-wash: #2a2210;
+    --good-wash: #0f2411;
+    --node-ok: #86a2a7;
+    --map-ground: #2f3133;
+    --scrim: rgba(0, 0, 0, 0.6);
+    --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow-2: 0 2px 6px rgba(0, 0, 0, 0.35), 0 12px 32px rgba(0, 0, 0, 0.45);
+  }
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --page: #081215;
+  --panel: #0e1c20;
+  --panel-2: #0b171a;
+  --panel-3: #16292e;
+  --ink: #e3eced;
+  --ink-2: #a2b4b7;
+  --ink-3: #7d9296;
+  --line: #1c2f35;
+  --line-2: #294148;
+  --header: #050d0f;
+  --header-2: #0d2126;
+  --header-line: #16303a;
+  --accent: #4bb3c0;
+  --accent-strong: #6fc6d1;
+  --accent-wash: #0f2f35;
+  --accent-ink: #04161a;
+  --water: #3987e5;
+  --water-wash: rgba(57, 135, 229, 0.18);
+  --neutral-mark: #3a5157;
+  --critical-ink: #f07a7a;
+  --serious-ink: #f2a07f;
+  --warning-ink: #f6c453;
+  --good-ink: #3fc23f;
+  --critical-wash: #2c1616;
+  --serious-wash: #2b1c14;
+  --warning-wash: #2a2210;
+  --good-wash: #0f2411;
+  --node-ok: #86a2a7;
+  --map-ground: #2f3133;
+  --scrim: rgba(0, 0, 0, 0.6);
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-2: 0 2px 6px rgba(0, 0, 0, 0.35), 0 12px 32px rgba(0, 0, 0, 0.45);
+}

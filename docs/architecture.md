@@ -12,7 +12,10 @@
         |--> [Weather Sync  (weather_client.py)] <-- OpenWeatherMap
         |--> [Decision Engine  (decision_engine.py)]
         v
-[Alerts]  --> Dashboard / SMS / WhatsApp
+[Alerts]  --> Dashboard (dashboard/)  --> crews via SMS / WhatsApp / radio
+                 |
+                 +--> [Operations API (operations.py)]: crews, dispatch,
+                      notifications, fleet view, simulator controls
 ```
 
 ## Status vs. brief
@@ -23,7 +26,8 @@
 | Cloud flood predictor | Spatial-temporal GNN over DEM + pipe topology | Simplified rise-rate (`dh/dt`) projection in `decision_engine.py`; honest MVP scoped to be replaced once historical flood data exists |
 | Weather sync | OpenWeatherMap/INM polling, mode switching | Implemented — real API call with a mock fallback when no key is set |
 | LoRaWAN transport | ESP32 + RFM95W uplink/downlink | Simulated by `edge_simulator/`; payload contract is hardware-ready |
-| Dashboard | Municipal GIS map | Not yet built |
+| Dashboard | Municipal GIS map | Implemented in `dashboard/` — live map with projected impact zones, incident queue, crew recommendations and dispatch, sensor table, model and weather analysis |
+| Crew notifications | SMS / WhatsApp alerts | Messages and dispatch orders are stored and shown as sent; real delivery needs a gateway |
 
 ## Ingest payload contract
 

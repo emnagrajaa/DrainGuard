@@ -1,0 +1,7 @@
+node_modules
+dist
+*.local
+.env
+
+# the root .gitignore ignores Python's lib/ folders; this one is source
+!/src/lib/

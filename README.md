@@ -11,6 +11,14 @@ TecWeek Ignis 3.0 — "Observe & Act" submission.
   Sfax, Sousse and Nabeul that speaks the exact payload contract real
   ESP32 firmware will send over LoRaWAN. Runs a scripted dry→pre-storm→
   storm scenario for live demos.
+- **`dashboard/`** — the municipal operations console (React + Leaflet):
+  live map with projected impact zones, incident queue sorted by time to
+  overflow, crew recommendations, dispatch and crew messaging, sensor
+  table, model/weather analysis. Can start simulator runs itself. See
+  `dashboard/README.md`.
+- **`cloud/api/operations.py`** — the endpoints behind the dashboard's
+  "Act" side: crews, dispatches, crew notifications, a fleet view, and
+  demo controls (run a simulator scenario, reset demo data).
 
 ## What's still a stub (next to build)
 
@@ -18,7 +26,8 @@ TecWeek Ignis 3.0 — "Observe & Act" submission.
   classifier (simulator currently fakes its output).
 - `ml/flood_predictor/` — the full spatial-temporal model; decision
   engine currently uses a simplified rise-rate projection instead.
-- `dashboard/` — the municipal map UI.
+- Real SMS / WhatsApp delivery for crew messages (records are stored and
+  shown as sent; plug a gateway into `operations.py`).
 - Real hardware firmware + LoRaWAN gateway integration (that's you).
 
 ## Quickstart (SQLite, zero setup)
@@ -35,6 +44,10 @@ python -m edge_simulator.fleet_simulator --scenario dry --ticks 5
 
 # terminal 2 — live storm demo (dry -> pre-storm -> storm, alerts fire)
 python -m edge_simulator.fleet_simulator --scenario storm --tick-seconds 1.5
+
+# terminal 3 — the dashboard (http://127.0.0.1:5173); its Simulate
+# button can also start these scenarios for you
+cd dashboard && npm install && npm run dev
 ```
 
 ## Switching to real Postgres/TimescaleDB (via Docker)
