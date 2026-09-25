@@ -11,7 +11,8 @@ RegionMode    — the current sampling mode (1/2/3) the weather sync
 from datetime import datetime, timezone
 
 from sqlalchemy import (
-    Column, Integer, String, Float, Boolean, DateTime, ForeignKey, JSON
+    Column, Integer, String, Float, Boolean, DateTime, ForeignKey, JSON,
+    PrimaryKeyConstraint,
 )
 from sqlalchemy.orm import relationship
 
@@ -41,9 +42,12 @@ class Node(Base):
 class Reading(Base):
     __tablename__ = "readings"
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
+    # TimescaleDB requires every unique key on a hypertable to include its
+    # partitioning column. Keep the generated reading id, but make the key
+    # composite with timestamp.
+    id = Column(Integer, autoincrement=True)
     node_id = Column(String, ForeignKey("nodes.id"), index=True)
-    timestamp = Column(DateTime, default=utcnow, index=True)
+    timestamp = Column(DateTime, default=utcnow, index=True, nullable=False)
     mode = Column(Integer)
     battery_v = Column(Float)
     moisture_switch = Column(Boolean, default=False)
@@ -53,6 +57,8 @@ class Reading(Base):
     classifier_class = Column(String, nullable=True)   # empty / solid_trash / organic_silt / false_positive
     classifier_confidence = Column(Float, nullable=True)
     p_trash = Column(Float, nullable=True)
+
+    __table_args__ = (PrimaryKeyConstraint("id", "timestamp"),)
 
     node = relationship("Node", back_populates="readings")
 
