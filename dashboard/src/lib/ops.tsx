@@ -20,6 +20,9 @@ interface Ops {
   selectedNodeId: string | null
   /** Opens a node on the operations map (switches view if needed). */
   openNode: (id: string | null) => void
+  /** Flies the map to a node without opening its details; null frames the whole area. */
+  focusNode: (id: string | null) => void
+  focus: { id: string | null; seq: number } | null
 
   fleet: FleetNode[]
   scopedFleet: FleetNode[]
@@ -60,6 +63,7 @@ export function OpsProvider({ children }: { children: ReactNode }) {
   const [view, setViewState] = useState<View>(readHash)
   const [scope, setScope] = useState<ScopeId>('all')
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null)
+  const [focus, setFocus] = useState<{ id: string | null; seq: number } | null>(null)
 
   useEffect(() => {
     const onHash = () => setViewState(readHash())
@@ -100,6 +104,12 @@ export function OpsProvider({ children }: { children: ReactNode }) {
         setSelectedNodeId(id)
         if (id && view !== 'operations') setView('operations')
       },
+      focusNode: (id) => {
+        setSelectedNodeId(null)
+        setFocus((f) => ({ id, seq: (f?.seq ?? 0) + 1 }))
+        if (view !== 'operations') setView('operations')
+      },
+      focus,
       fleet,
       scopedFleet: fleet.filter((n) => inScope(scope, n.municipality)),
       nodeById: new Map(fleet.map((n) => [n.id, n])),
@@ -124,6 +134,7 @@ export function OpsProvider({ children }: { children: ReactNode }) {
     view,
     scope,
     selectedNodeId,
+    focus,
     fleetQ.data,
     fleetQ.isError,
     fleetQ.isPending,

@@ -136,8 +136,8 @@ function ContourBloom({ lat, lon, radius, tone }: { lat: number; lon: number; ra
     const tick = (t: number) => {
       const dt = Math.min(100, t - last)
       last = t
-      // Exponential approach: the zone takes ~4 s to reach its first size, then eases between sizes.
-      current += (target.current - current) * (1 - Math.exp(-dt / 1300))
+      // Exponential approach: the zone takes ~6 s to reach its first size, then eases between sizes.
+      current += (target.current - current) * (1 - Math.exp(-dt / 2000))
       if (map.getZoom() >= FAR_ZOOM - 2) draw(current, t)
       raf = requestAnimationFrame(tick)
     }
@@ -163,7 +163,7 @@ function bloomRadius(inc: Incident, now: Date, leadTimeMin: number): number {
 
 export function OpsMap() {
   const ops = useOps()
-  const { scope, scopedFleet, scopedTeams, incidentByNode, nodeById, activeDispatchByTeam, selectedNodeId, openNode, leadTimeMin } = ops
+  const { scope, scopedFleet, scopedTeams, incidentByNode, nodeById, activeDispatchByTeam, selectedNodeId, openNode, leadTimeMin, focus } = ops
   const theme = useTheme()
   const reduced = useReducedMotion()
   const now = useNow(1000)
@@ -201,6 +201,22 @@ export function OpsMap() {
     if (node?.latitude == null || node.longitude == null) return
     map.flyTo([node.latitude, node.longitude], Math.max(map.getZoom(), 15), { animate: !reduced, duration: 1.1 })
   }, [map, selectedNodeId])
+
+  // Fly to a focused drain once it is on the map (it may arrive with the next fetch),
+  // or back out to the whole area when the focus is cleared.
+  const focused = focus?.id ? nodeById.get(focus.id) : undefined
+  const focusReady = focused?.latitude != null && focused.longitude != null
+  useEffect(() => {
+    if (!map || !focus) return
+    if (focus.id === null) {
+      userMoved.current = false
+      map.flyToBounds(boundsRef.current, { animate: !reduced, duration: 1.2, maxZoom: 15 })
+      return
+    }
+    if (!focused || !focusReady) return
+    userMoved.current = true
+    map.flyTo([focused.latitude!, focused.longitude!], 15, { animate: !reduced, duration: 1.6 })
+  }, [map, focus?.seq, focusReady])
 
   useEffect(() => {
     if (!map) return
@@ -351,7 +367,8 @@ function CrewRoute({ team }: { team: Team }) {
 }
 
 function MapLegend() {
-  const [open, setOpen] = useState(() => window.innerWidth > 720)
+  // Open by default only where it won't crowd the map.
+  const [open, setOpen] = useState(() => window.innerWidth > 720 && window.innerHeight > 760)
   return (
     <div className={`legend ${open ? 'is-open' : ''}`}>
       <button type="button" className="legend__toggle" aria-expanded={open} onClick={() => setOpen((o) => !o)}>

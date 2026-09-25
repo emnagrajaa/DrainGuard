@@ -6,9 +6,16 @@
   height: 100dvh;
 }
 
+/* Pinned to the last row: when the offline banner is hidden, main must not
+   slide into the banner's content-sized row and leave the flexible row empty. */
 .app__main {
+  grid-row: 4;
   min-height: 0;
   overflow: auto;
+}
+
+.banner {
+  grid-row: 3;
 }
 
 .app--operations .app__main {

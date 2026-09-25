@@ -154,6 +154,21 @@ export function useResetDemo() {
   })
 }
 
+/** The staged pitch drain in El Khadra, Tunis (cloud/api/operations.py: KHADRA_NODE). */
+export const KHADRA_NODE_ID = 'TUN-KHADRA-011'
+
+/**
+ * Pitch demo: raises (on = true) or removes (on = false) the staged El Khadra
+ * flood warning, then waits for the map data to catch up.
+ */
+export function useToggleKhadra() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (on: boolean) => (on ? api.post<unknown>('/demo/khadra') : api.del<unknown>('/demo/khadra')),
+    onSuccess: () => qc.invalidateQueries().then(() => undefined),
+  })
+}
+
 export function useSyncWeather() {
   const invalidate = useInvalidate()
   return useMutation({

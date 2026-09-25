@@ -38,56 +38,18 @@ static build served without the proxy, set `VITE_API_URL` and run
    drives toward the drain on the map. Mark it on site, then resolved.
 5. **Simulate → Reset demo data** between rehearsals.
 
-## Views
+### Pitch shortcut: press `P`
 
-| View | What it is for |
-|---|---|
-| Operations | The Detect → Understand → Alert → Act strip, the live map and the incident queue / crew list / activity log. Opening a drain shows its full picture and the dispatch controls. |
-| Crews | The roster with status and assignments; message one crew, a municipality or everyone (pre-storm standby, all-clear…); dispatch an idle crew to an open incident. |
-| Sensors | Every drain node: condition, mode, water level, rise rate, time to overflow, classifier output, battery, last report. |
-| Analysis | Per-drain classifier and predictor outputs against their thresholds, the weather sync that sets sampling modes, SDG 11.5 / 13.1 impact indicators, and what the dashboard is connected to. |
+**P** toggles a staged flood warning at El Khadra, Tunis (`TUN-KHADRA-011`).
 
-The **Area** control (all municipalities, Grand Tunis, Sousse, Sfax,
-Nabeul) scopes every view at once.
+- **First press:** the backend (`POST /api/v1/demo/khadra`) pushes a short
+  history through the normal ingest path. The edge classifier sees solid
+  trash before the rain, then the storm fills the basin, and the decision
+  engine opens the alerts itself. The map flies to El Khadra and the impact
+  zone grows around the drain. There are about 18 minutes to overflow, so
+  there's time to dispatch a crew live.
+- **Next press:** `DELETE /api/v1/demo/khadra` removes the drain, its
+  alerts and any dispatch to it (the crew goes back to available). The map
+  returns to the empty whole-area view, ready to go again.
 
-## How it connects
-
-| Part of the system | Where it shows up | API |
-|---|---|---|
-| Drain nodes / edge simulator | Map, Sensors, water-level charts | `GET /fleet`, `GET /nodes/{id}/history` |
-| Layer 1 · edge debris classifier | Blockage probability, class, confidence | `classifier` in `/fleet` (from each uplink) |
-| Layer 2 · flood predictor | Time to overflow, bloom size, queue order | `projected_overflow_min` in `/fleet`, `eta_minutes` on alerts |
-| Decision engine | Incidents (a node's open alerts grouped together) | `GET /alerts`, `POST /alerts/ack-node` |
-| Weather sync | Forecast and sampling modes | `GET /regions`, `POST /weather/sync` |
-| Crews and dispatch | Recommendations, dispatch, notifications | `/teams`, `/nodes/{id}/recommendations`, `/dispatches`, `/notifications` |
-| Demo controls | Simulate dialog | `POST /simulator/run`, `GET /simulator`, `POST /demo/reset` |
-
-The classifier and predictor outputs come from whatever produces them
-today (edge simulator, `dh/dt` projection in the decision engine). When
-`ml/edge_classifier` and `ml/flood_predictor` ship, the same fields fill
-with their outputs and the dashboard needs no changes.
-
-Crew messages are stored and shown as sent. Real delivery needs an SMS /
-WhatsApp gateway (for example Twilio) wired into
-`cloud/api/operations.py:notify_crews` and `create_dispatch`.
-
-## Notes
-
-- **Basemap:** Esri World Light / Dark Gray Canvas (no key needed for a
-  prototype, attribution shown on the map). For production use, get an
-  ArcGIS key or swap the URLs in `src/components/OpsMap.tsx`.
-- **Timestamps:** SQLite returns them without a zone; `lib/time.parseTs`
-  treats them as UTC.
-- **Themes:** day and night themes follow the OS setting; the header
-  toggle overrides it.
-
-## Code map
-
-```
-src/
-  api/          client, response types, React Query hooks
-  lib/          domain rules (incidents, crew positions, water level), ops context, time
-  components/   header, workflow strip, map (contour bloom), rail, drain detail, charts, dialogs
-  views/        Operations, Crews, Sensors, Analysis
-  styles/       tokens (light/dark), base, layout, operations, pages
-```
+The key is ignored while typing or in a dialog, and Ctrl+P still prints.

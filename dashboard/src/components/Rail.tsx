@@ -65,18 +65,14 @@ export function Rail() {
 // ---------------------------------------------------------------- incidents
 
 function IncidentList() {
-  const { incidents, openNode, selectedNodeId, fleet, simulator } = useOps()
+  const { incidents, openNode, selectedNodeId, simulator } = useOps()
   const now = useNow(1000)
 
   if (!incidents.length) {
     return (
       <div className="empty">
         <p className="empty__title">No open incidents</p>
-        <p>
-          {fleet.length
-            ? 'Every drain in this area is within limits. New alerts from the decision engine appear here, most urgent first.'
-            : 'No sensors have reported yet. Start a storm simulation from the header to watch the full detect-to-dispatch loop.'}
-        </p>
+        <p>Every drain in this area is within limits. New alerts from the decision engine appear here, most urgent first.</p>
         {simulator?.running && <p className="muted">Simulation running — readings are arriving.</p>}
       </div>
     )

@@ -16,7 +16,7 @@ Mounted by main.py; nothing here changes the ingest contract.
 """
 import math
 import threading
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request
@@ -498,3 +498,80 @@ def demo_reset(db: Session = Depends(get_db)):
         team.updated_at = _utcnow()
     db.commit()
     return {"reset": True}
+
+
+# The staged pitch incident: a drain in El Khadra (Tunis) that the edge
+# classifier flagged as blocked before the rain, now filling fast.
+KHADRA_NODE = {"node_id": "TUN-KHADRA-011", "municipality": "Tunis", "latitude": 36.8298, "longitude": 10.1966}
+
+
+def _khadra_history(now: datetime) -> list[dict]:
+    """Dry check, two pre-storm checks that see solid trash, then ten storm samples 30 s apart."""
+    base = {**KHADRA_NODE, "battery_v": 3.58}
+    history = [
+        {**base, "timestamp": now - timedelta(hours=6), "mode": 1, "moisture_switch": False, "distance_cm": 45.0,
+         "classifier_output": {"class": "organic_silt", "confidence": 0.81, "p_trash": 0.38}},
+        {**base, "timestamp": now - timedelta(minutes=35), "mode": 2, "moisture_switch": False, "distance_cm": 45.0,
+         "classifier_output": {"class": "solid_trash", "confidence": 0.9, "p_trash": 0.68}},
+        {**base, "timestamp": now - timedelta(minutes=20), "mode": 2, "moisture_switch": False, "distance_cm": 45.0,
+         "classifier_output": {"class": "solid_trash", "confidence": 0.93, "p_trash": 0.74}},
+    ]
+    samples = 10
+    for i in range(samples):
+        history.append({
+            **base,
+            "timestamp": now - timedelta(seconds=30 * (samples - 1 - i)),
+            "mode": 3,
+            "moisture_switch": True,
+            "distance_cm": round(44.0 - 2.0 * i, 2),   # water surface climbing towards the sensor
+            "dh_dt": round(0.9 + 0.06 * i, 2),          # and rising faster each sample
+        })
+    return history
+
+
+@router.post("/demo/khadra")
+def demo_khadra(db: Session = Depends(get_db)):
+    """
+    Pitch demo: raises a flood warning at El Khadra by pushing a short storm
+    history through the normal ingest path, so the decision engine opens the
+    alerts itself. A second call while that incident is still open does nothing.
+    """
+    from .main import ingest  # imported here: main imports this module
+
+    node_id = KHADRA_NODE["node_id"]
+    open_alerts = (
+        db.query(models.Alert)
+        .filter(models.Alert.node_id == node_id, models.Alert.acknowledged == False)  # noqa: E712
+        .count()
+    )
+    if open_alerts:
+        return {"node_id": node_id, "triggered": False, "open_alerts": open_alerts}
+
+    for payload in _khadra_history(_utcnow()):
+        ingest(schemas.IngestPayload(**payload), db)
+    return {"node_id": node_id, "triggered": True}
+
+
+@router.delete("/demo/khadra")
+def demo_khadra_clear(db: Session = Depends(get_db)):
+    """
+    Removes the staged El Khadra drain and everything it produced (readings,
+    alerts, dispatches and their crew messages), standing any crew sent there
+    back to available, so the map is empty again for the next rehearsal.
+    """
+    node_id = KHADRA_NODE["node_id"]
+    dispatches = db.query(models.Dispatch).filter(models.Dispatch.node_id == node_id).all()
+    for d in dispatches:
+        team = db.get(models.Team, d.team_id)
+        if team is not None and d.status in ACTIVE_DISPATCH_STATUSES:
+            team.status = "available"
+            team.updated_at = _utcnow()
+    if dispatches:
+        db.query(models.Notification).filter(
+            models.Notification.dispatch_id.in_([d.id for d in dispatches])
+        ).delete(synchronize_session=False)
+    for model in (models.Dispatch, models.Alert, models.Reading):
+        db.query(model).filter(model.node_id == node_id).delete(synchronize_session=False)
+    db.query(models.Node).filter(models.Node.id == node_id).delete(synchronize_session=False)
+    db.commit()
+    return {"node_id": node_id, "cleared": True}

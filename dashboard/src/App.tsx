@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { WifiOff } from 'lucide-react'
 import { ContextBar } from './components/ContextBar'
+import { DemoHotkey } from './components/DemoHotkey'
 import { Header } from './components/Header'
 import { useOps } from './lib/ops'
 import { AnalysisView } from './views/AnalysisView'
@@ -18,6 +19,7 @@ export function App() {
 
   return (
     <div className={`app app--${view}`}>
+      <DemoHotkey />
       <Header />
       <ContextBar />
       {!online && !loading && (

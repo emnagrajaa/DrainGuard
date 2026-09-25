@@ -63,7 +63,7 @@ export function WorkflowStrip() {
         <span className="wf__value">
           <span className="wf__num">{incidents.length}</span>
         </span>
-        <span className="wf__label">open incidents{critical.length ? `, ${critical.length} flood risk` : ''}</span>
+        <span className="wf__label">open incidents{critical.length ? ` · ${critical.length} flood risk` : ''}</span>
         <span className="wf__sub">
           {next && nextEta != null ? (
             <button type="button" className="wf__link" onClick={() => openNode(next.nodeId)}>
